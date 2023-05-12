@@ -30,7 +30,12 @@
                     </button>
 
                     <div class="button-group">
-                        <button @click="doDisableAll()" v-tooltip="'全部禁用'" class="icon">
+                        <button 
+                            @click="doDisableAll()" 
+                            v-tooltip="'全部禁用'" 
+                            class="icon"
+                            :class="{ disabled: true }"
+                        >
                             <Icon icon="radix-icons:shadow-none" />
                         </button>
                         <button
@@ -45,7 +50,7 @@
                             @click="doClear()"
                             v-tooltip="'清空输入'"
                             class="icon"
-                            :class="{ disabled: inputText?.length == '' }"
+                            :class="{ disabled: true }"
                         >
                             <Icon icon="radix-icons:crumpled-paper" />
                         </button>
@@ -455,6 +460,7 @@ export default Vue.extend({
             this.doImportByInputThrottle()
         }, 300)
         this.inputText = this.promptWork.data.initText ?? ""
+        this.loadInputTextFromLocalStorage(); // 从 localStorage 加载文本
         this.doImportByInputThrottle()
     },
     watch: {
@@ -481,7 +487,19 @@ export default Vue.extend({
         },
         async onUserInputDebounce() {
             // console.log("[onUserInputDebounce]")
+            this.saveInputTextToLocalStorage(); // 保存文本到 localStorage
             ;(<any>this).doAddInputDebounce()
+        },
+        saveInputTextToLocalStorage() {
+            const inputkey = `inputText_${this.promptWork.data.id}`;
+            localStorage.setItem(inputkey, this.inputText);
+        },
+        loadInputTextFromLocalStorage() {
+            const inputkey = `inputText_${this.promptWork.data.id}`;
+            this.inputText = localStorage.getItem(inputkey) || "";
+            if (inputkey == "inputText_0" && this.inputText == "") {
+                this.inputText = "apple, forest ::-1 big bad wolf, wood ::2 unreal engine, cinematic lighting, UHD, super detail --aspect 2:3";
+            }
         },
         async doClear() {
             this.inputText = ""
